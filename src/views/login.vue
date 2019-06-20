@@ -48,7 +48,10 @@ export default {
           console.log('ok')
         } else {
           // 给出用户提示
-          console.log('no')
+          this.$message({
+            message: '数据输入不合法',
+            type: 'error'
+          })
           return false
         }
       })

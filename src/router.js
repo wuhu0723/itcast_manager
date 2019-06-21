@@ -6,6 +6,7 @@ import VueRouter from 'vue-router'
 // 在配置文件中，已经进行根目录的配置。@符合就代码src根目录
 import Login from '@/views/login.vue'
 import Home from '@/views/home.vue'
+import Welcome from '@/views/Welcome.vue'
 Vue.use(VueRouter)
 
 // 创建路由模块
@@ -19,7 +20,17 @@ var router = new VueRouter({
     {
       name: 'Home',
       path: '/home',
-      component: Home
+      component: Home,
+      // 添加重定向
+      redirect: { name: 'Welcome' },
+      // 添加嵌套路由
+      children: [
+        {
+          name: 'Welcome',
+          path: 'welcome',
+          component: Welcome
+        }
+      ]
     }
   ]
 })

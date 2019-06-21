@@ -57,12 +57,15 @@ export default {
           //   验证通过，就去发起登陆请求
           userlogin(this.loginForm)
             .then(result => {
+              console.log(result)
               if (result.data.meta.status === 400) {
                 this.$message({
                   message: result.data.meta.msg,
                   type: 'error'
                 })
               } else {
+                // 存储token到本地
+                localStorage.setItem('itcast_pro_token', result.data.data.token)
                 //   路由跳转
                 this.$router.push({ name: 'Home' })
               }

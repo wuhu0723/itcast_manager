@@ -24,16 +24,16 @@
       <el-table-column prop="username" label="姓名" width="180"></el-table-column>
       <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
       <el-table-column prop="mobile" label="电话" width="300"></el-table-column>
-      <el-table-column label="状态"  width="120">
+      <el-table-column label="状态" width="120">
         <template slot-scope="scope">
           <el-switch v-model="value2" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
-          <!-- 插槽：匿名插槽，具名插槽，数据插槽 -->
+        <!-- 插槽：匿名插槽，具名插槽，数据插槽 -->
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
-            <el-button type="info" icon="el-icon-edit" @click='handleEdit(scope.row)'></el-button>
+            <el-button type="info" icon="el-icon-edit" @click="handleEdit(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分配角色" placement="top">
             <el-button type="success" icon="el-icon-share"></el-button>
@@ -44,6 +44,16 @@
         </template>
       </el-table-column>
     </el-table>
+    <!-- 分页组件 -->
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="pagenum"
+      :page-sizes="[1, 2, 3, 4]"
+      :page-size="pagesize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total-0"
+    ></el-pagination>
   </div>
 </template>
 <script>
@@ -51,34 +61,56 @@ import { getAllList } from '@/api/users.js'
 export default {
   data () {
     return {
+      // 总记录数
+      total: '',
       value2: true,
       query: '',
+      //   当前页码
       pagenum: 1,
-      pagesize: 10,
+      //   每页显示的记录数
+      pagesize: 2,
       // 搜索关键字
       userKey: '',
       userList: []
     }
   },
   methods: {
+    //   切换每页显示记录数时触发
+    handleSizeChange (val) {
+      console.log(`每页 ${val} 条`)
+      //   val就是当前设置之后的每页的记录数，我们只需要重置pagesize
+      this.pagesize = val
+      this.init()
+    },
+    //   切换当前页码时触发
+    handleCurrentChange (val) {
+      console.log(`当前页: ${val}`)
+      this.pagenum = val
+      this.init()
+    },
     handleEdit (obj) {
       console.log(obj)
+    },
+    // 获取数据
+    init () {
+      getAllList({
+        query: this.query,
+        pagenum: this.pagenum,
+        pagesize: this.pagesize
+      })
+        .then(res => {
+          console.log(res)
+          this.userList = res.data.data.users
+          this.total = res.data.data.total
+        })
+        .catch(err => {
+          console.log(err)
+        })
     }
   },
   // 页面加载完成就去获取用户列表数据
   mounted () {
-    getAllList({
-      query: this.query,
-      pagenum: this.pagenum,
-      pagesize: this.pagesize
-    })
-      .then(res => {
-        console.log(res)
-        this.userList = res.data.data.users
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    this.init()
   }
 }
 </script>

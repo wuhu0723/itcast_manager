@@ -19,11 +19,11 @@
       <el-button type="success" plain>添加用户</el-button>
     </div>
     <!-- 表格 -->
-    <el-table :data="tableData" border style="width: 100%;margin-top:15px">
+    <el-table :data="userList" border style="width: 100%;margin-top:15px">
       <el-table-column type="index" width="50"></el-table-column>
-      <el-table-column prop="date" label="日期" width="180"></el-table-column>
-      <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-      <el-table-column prop="address" label="地址" width="300"></el-table-column>
+      <el-table-column prop="username" label="姓名" width="180"></el-table-column>
+      <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
+      <el-table-column prop="mobile" label="电话" width="300"></el-table-column>
       <el-table-column label="状态"  width="120">
         <template slot-scope="scope">
           <el-switch v-model="value2" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
@@ -33,7 +33,7 @@
           <!-- 插槽：匿名插槽，具名插槽，数据插槽 -->
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
-            <el-button type="info" icon="el-icon-edit"></el-button>
+            <el-button type="info" icon="el-icon-edit" @click='handleEdit(scope.row)'></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分配角色" placement="top">
             <el-button type="success" icon="el-icon-share"></el-button>
@@ -57,28 +57,7 @@ export default {
       pagesize: 10,
       // 搜索关键字
       userKey: '',
-      tableData: [
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        },
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }
-      ]
+      userList: []
     }
   },
   methods: {
@@ -95,6 +74,7 @@ export default {
     })
       .then(res => {
         console.log(res)
+        this.userList = res.data.data.users
       })
       .catch(err => {
         console.log(err)

@@ -13,6 +13,7 @@
         v-model="userKey"
         class="input-with-select"
         style="width:300px;margin-right:15px"
+        @keyup.native.enter='init'
       >
         <el-button slot="append" icon="el-icon-search"></el-button>
       </el-input>
@@ -26,7 +27,12 @@
       <el-table-column prop="mobile" label="电话" width="300"></el-table-column>
       <el-table-column label="状态" width="120">
         <template slot-scope="scope">
-          <el-switch v-model="value2" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+          <el-switch
+            v-model="scope.row.mg_state"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            @change="updateStatus(scope.row.id,scope.row.mg_state)"
+          ></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -39,7 +45,7 @@
             <el-button type="success" icon="el-icon-share"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
-            <el-button type="warning" icon="el-icon-delete" @click='del(scope.row.id)'></el-button>
+            <el-button type="warning" icon="el-icon-delete" @click="del(scope.row.id)"></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -92,16 +98,60 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="editDialogFormVisible = false;$refs.editForm.resetFields()">取 消</el-button>
-        <el-button type="primary" @click='edit'>确 定</el-button>
+        <el-button type="primary" @click="edit">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 分配角色对话框 -->
+    <el-dialog title="分配角色" :visible.sync="grantDialogFormVisible">
+      <el-form ref="grantForm" :model="grantForm" :label-width="'120px'">
+        <el-form-item label="用户名">
+          <el-input v-model="grantForm.username" auto-complete="off" disabled></el-input>
+        </el-form-item>
+        <!-- 添加下拉列表 -->
+        <el-select v-model="myvalue" placeholder="请选择" @change='roleChange'>
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          ></el-option>
+        </el-select>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="grantDialogFormVisible = false;">取 消</el-button>
+        <el-button type="primary">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script>
-import { getAllList, addUser, editUser, deleteUser } from '@/api/users.js'
+import {
+  getAllList,
+  addUser,
+  editUser,
+  deleteUser,
+  updateUserStatus
+} from '@/api/users.js'
 export default {
   data () {
     return {
+      options: [{
+        value: '1',
+        label: '黄金糕'
+      }, {
+        value: '2',
+        label: '双皮奶'
+      }],
+      myvalue: '',
+      // 控制角色分配对话框的显示和隐藏
+      grantDialogFormVisible: true,
+      // 分配角色对应数据
+      grantForm: {
+        id: '',
+        rid: '',
+        username: ''
+      },
       // 控制编辑用户对话框的显示和隐藏
       editDialogFormVisible: false,
       editForm: {
@@ -149,7 +199,6 @@ export default {
       },
       // 总记录数
       total: '',
-      value2: true,
       query: '',
       //   当前页码
       pagenum: 1,
@@ -161,6 +210,21 @@ export default {
     }
   },
   methods: {
+    roleChange (value) {
+      console.log(value, this.myvalue)
+    },
+    // 修改用户状态
+    updateStatus (id, type) {
+      updateUserStatus(id, type).then(res => {
+        console.log(res)
+        if (res.data.meta.status === 200) {
+          this.$message({
+            type: 'success',
+            message: res.data.meta.msg
+          })
+        }
+      })
+    },
     // 根据id删除用户
     del (id) {
       // 弹出删除确认框
@@ -168,56 +232,60 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        // 发起删除请求
-        deleteUser(id)
-          .then(res => {
-            if (res.data.meta.status === 200) {
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
-              })
-              this.init()
-            }
-          })
-          .catch(() => {
-            this.$message({
-              type: 'error',
-              message: '删除失败!'
-            })
-          })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
       })
+        .then(() => {
+          // 发起删除请求
+          deleteUser(id)
+            .then(res => {
+              if (res.data.meta.status === 200) {
+                this.$message({
+                  type: 'success',
+                  message: '删除成功!'
+                })
+                this.init()
+              }
+            })
+            .catch(() => {
+              this.$message({
+                type: 'error',
+                message: '删除失败!'
+              })
+            })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
     },
     // 编辑用户
     edit () {
       this.$refs.editForm.validate(valid => {
         if (valid) {
-          editUser(this.editForm).then(res => {
-            console.log(res)
-            if (res.data.meta.status === 200) {
-              this.$message({
-                type: 'success',
-                message: res.data.meta.msg
-              })
-              // 数据刷新
-              this.editDialogFormVisible = false
-              // 表单元素的数据重置
-              this.$refs.editForm.resetFields()
-              this.init()
-            } else {
-              this.$message({
-                type: 'error',
-                message: res.data.meta.msg
-              })
-            }
-          }).catch(() => {
-            console.log('err')
-          })
+          editUser(this.editForm)
+            .then(res => {
+              console.log(res)
+              if (res.data.meta.status === 200) {
+                this.$message({
+                  type: 'success',
+                  message: res.data.meta.msg
+                })
+                // 数据刷新
+                this.editDialogFormVisible = false
+                // 表单元素的数据重置
+                this.$refs.editForm.resetFields()
+                this.init()
+              } else {
+                this.$message({
+                  type: 'error',
+                  message: res.data.meta.msg
+                })
+              }
+            })
+            .catch(() => {
+              console.log('err')
+            })
         } else {
           return false
         }
@@ -286,7 +354,7 @@ export default {
     // 获取数据
     init () {
       getAllList({
-        query: this.query,
+        query: this.userKey,
         pagenum: this.pagenum,
         pagesize: this.pagesize
       })

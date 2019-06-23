@@ -73,3 +73,22 @@ export const deleteUser = (id) => {
     url: `users/${id}`
   })
 }
+
+// 修改用户状态
+export const updateUserStatus = (id, type) => {
+  return axios({
+    method: 'put',
+    url: `users/${id}/state/${type}`
+  })
+}
+
+// 分配用户角色
+// id:就是id号
+// rid:也是一个id号
+export const grantUserRole = (id, rid) => {
+  return axios({
+    method: 'put',
+    url: `users/${id}/role`,
+    data: { rid: rid }
+  })
+}

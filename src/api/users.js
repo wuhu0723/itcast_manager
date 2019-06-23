@@ -52,3 +52,16 @@ export const addUser = (data) => {
     data
   })
 }
+
+// 编辑用户
+/**
+ * 这个方法可以实现用户数据的编辑
+ * @param {object} data-用户对象
+ */
+export const editUser = (data) => {
+  return axios({
+    method: 'put',
+    url: `users/${data.id}`,
+    data
+  })
+}

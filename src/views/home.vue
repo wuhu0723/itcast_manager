@@ -17,6 +17,11 @@
               <i class="el-icon-location"></i>
               <span>用户管理</span>
             </template>
+            <!-- 路由映射组件
+            映射就是指：让路由所对应的组件在指定router-view中展示
+            指定router-view：关注组件的嵌套结构
+            <a href='../*.html'></a>
+            <a href='../*.vue'></a> -->
             <el-menu-item index="/home/users">
               <template slot="title">
                 <i class="el-icon-location"></i>

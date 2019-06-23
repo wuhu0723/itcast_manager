@@ -16,7 +16,7 @@
       >
         <el-button slot="append" icon="el-icon-search"></el-button>
       </el-input>
-      <el-button type="success" plain>添加用户</el-button>
+      <el-button type="success" plain @click="addDialogFormVisible=true">添加用户</el-button>
     </div>
     <!-- 表格 -->
     <el-table :data="userList" border style="width: 100%;margin-top:15px">
@@ -54,13 +54,64 @@
       layout="total, sizes, prev, pager, next, jumper"
       :total="total-0"
     ></el-pagination>
+
+    <!-- 新增用户对话框 -->
+    <el-dialog title="新增用户" :visible.sync="addDialogFormVisible">
+      <el-form ref='addForm' :model="addForm" :rules='rules' :label-width="'120px'">
+        <el-form-item label="用户名" prop='username'>
+          <el-input v-model="addForm.username" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop='password'>
+          <el-input v-model="addForm.password" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop='email'>
+          <el-input v-model="addForm.email" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop='mobile'>
+          <el-input v-model="addForm.mobile" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addDialogFormVisible = false;$refs.addForm.resetFields()">取 消</el-button>
+        <el-button type="primary" @click='add'>确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getAllList } from '@/api/users.js'
+import { getAllList, addUser } from '@/api/users.js'
 export default {
   data () {
     return {
+      // 控制新增用户对话框的显示和隐藏
+      addDialogFormVisible: false,
+      // 新增数据的表单数据绑定对象
+      addForm: {
+        username: '',
+        password: '',
+        email: '',
+        mobile: ''
+      },
+      // 新增用户和编辑用户数据验证规则
+      rules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 6, max: 16, message: '长度在 6 到 16 个字符', trigger: 'blur' }
+        ],
+        email: [
+          // wuhu0723@126.com
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { message: '请输入合法的邮箱', pattern: /\w+[@]\w+[.]\w+/, trigger: 'blur' }
+        ],
+        mobile: [
+          // wuhu0723@126.com
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { message: '请输入正确的手机号', pattern: /^1\d{10}$/, trigger: 'blur' }
+        ]
+      },
       // 总记录数
       total: '',
       value2: true,
@@ -68,13 +119,50 @@ export default {
       //   当前页码
       pagenum: 1,
       //   每页显示的记录数
-      pagesize: 2,
+      pagesize: 4,
       // 搜索关键字
       userKey: '',
       userList: []
     }
   },
   methods: {
+    // 新增用户
+    add () {
+      // 再次进行用户数据的验证
+      this.$refs.addForm.validate(valid => {
+        if (valid) {
+          // 发起新增用户请求
+          addUser(this.addForm)
+            .then(res => {
+              if (res.data.meta.staus === 201) {
+                this.$message({
+                  type: 'success',
+                  message: res.data.meta.msg
+                })
+                // 数据刷新
+                this.addDialogFormVisible = false
+                // 表单元素的数据重置
+                this.$refs.addForm.resetFields()
+                this.init()
+              } else {
+                this.$message({
+                  type: 'error',
+                  message: res.data.meta.msg
+                })
+              }
+            })
+            .catch(() => {
+              this.$message({
+                type: 'error',
+                message: 'err'
+              })
+            })
+        } else {
+          // 中止本次请求
+          return false
+        }
+      })
+    },
     //   切换每页显示记录数时触发
     handleSizeChange (val) {
       console.log(`每页 ${val} 条`)

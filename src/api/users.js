@@ -65,3 +65,11 @@ export const editUser = (data) => {
     data
   })
 }
+
+// 删除用户
+export const deleteUser = (id) => {
+  return axios({
+    method: 'delete',
+    url: `users/${id}`
+  })
+}

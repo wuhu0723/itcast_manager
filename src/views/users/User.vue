@@ -39,7 +39,7 @@
             <el-button type="success" icon="el-icon-share"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
-            <el-button type="warning" icon="el-icon-delete"></el-button>
+            <el-button type="warning" icon="el-icon-delete" @click='del(scope.row.id)'></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -98,7 +98,7 @@
   </div>
 </template>
 <script>
-import { getAllList, addUser, editUser } from '@/api/users.js'
+import { getAllList, addUser, editUser, deleteUser } from '@/api/users.js'
 export default {
   data () {
     return {
@@ -161,6 +161,38 @@ export default {
     }
   },
   methods: {
+    // 根据id删除用户
+    del (id) {
+      // 弹出删除确认框
+      this.$confirm(`此操作将永久删除id号为${id}的数据, 是否继续?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 发起删除请求
+        deleteUser(id)
+          .then(res => {
+            if (res.data.meta.status === 200) {
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              })
+              this.init()
+            }
+          })
+          .catch(() => {
+            this.$message({
+              type: 'error',
+              message: '删除失败!'
+            })
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
     // 编辑用户
     edit () {
       this.$refs.editForm.validate(valid => {

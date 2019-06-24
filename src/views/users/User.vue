@@ -13,7 +13,7 @@
         v-model="userKey"
         class="input-with-select"
         style="width:300px;margin-right:15px"
-        @keyup.native.enter='init'
+        @keyup.native.enter="init"
       >
         <el-button slot="append" icon="el-icon-search"></el-button>
       </el-input>
@@ -37,12 +37,12 @@
       </el-table-column>
       <el-table-column label="操作">
         <!-- 插槽：匿名插槽，具名插槽，数据插槽 -->
-        <template slot-scope="scope">
+        <template v-slot="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
             <el-button type="info" icon="el-icon-edit" @click="handleEdit(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分配角色" placement="top">
-            <el-button type="success" icon="el-icon-share"></el-button>
+            <el-button type="success" icon="el-icon-share" @click='grantuserrole(scope.row)'></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
             <el-button type="warning" icon="el-icon-delete" @click="del(scope.row.id)"></el-button>
@@ -106,21 +106,23 @@
     <el-dialog title="分配角色" :visible.sync="grantDialogFormVisible">
       <el-form ref="grantForm" :model="grantForm" :label-width="'120px'">
         <el-form-item label="用户名">
-          <el-input v-model="grantForm.username" auto-complete="off" disabled></el-input>
+          <el-input v-model="grantForm.username" auto-complete="off" disabled style='width:200px'></el-input>
         </el-form-item>
         <!-- 添加下拉列表 -->
-        <el-select v-model="myvalue" placeholder="请选择" @change='roleChange'>
-          <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          ></el-option>
-        </el-select>
+        <el-form-item label="角色列表">
+          <el-select v-model="grantForm.rid" placeholder="请选择" @change="roleChange">
+            <el-option
+              v-for="item in roleList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="grantDialogFormVisible = false;">取 消</el-button>
-        <el-button type="primary">确 定</el-button>
+        <el-button type="primary" @click='grantrolesubmit'>确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -131,21 +133,17 @@ import {
   addUser,
   editUser,
   deleteUser,
-  updateUserStatus
+  updateUserStatus,
+  grantUserRole
 } from '@/api/users.js'
+import { getAllRoleList } from '@/api/roles.js'
 export default {
   data () {
     return {
-      options: [{
-        value: '1',
-        label: '黄金糕'
-      }, {
-        value: '2',
-        label: '双皮奶'
-      }],
+      roleList: [],
       myvalue: '',
       // 控制角色分配对话框的显示和隐藏
-      grantDialogFormVisible: true,
+      grantDialogFormVisible: false,
       // 分配角色对应数据
       grantForm: {
         id: '',
@@ -210,13 +208,43 @@ export default {
     }
   },
   methods: {
+    // 分配角色提交
+    grantrolesubmit () {
+      if (this.grantForm.rid) {
+        grantUserRole(this.grantForm.id, this.grantForm.rid)
+          .then(res => {
+            if (res.data.meta.status === 200) {
+              this.$message({
+                type: 'success',
+                message: res.data.meta.msg
+              })
+              this.grantDialogFormVisible = false
+            }
+          })
+      } else {
+        this.$message({
+          type: 'warning',
+          message: '请先选择一个角色'
+        })
+      }
+    },
+    // 分配指定用户的角色弹出交互框
+    grantuserrole (row) {
+      this.grantForm.rid = row.rid
+
+      this.grantDialogFormVisible = true
+      // 调用接口方法
+      // 接口方法需要两个参数：当前用户id,当前所选择的角色id
+      this.grantForm.id = row.id
+      this.grantForm.username = row.username
+    },
+    // 下拉列表切换
     roleChange (value) {
-      console.log(value, this.myvalue)
+      this.grantForm.rid = value
     },
     // 修改用户状态
     updateStatus (id, type) {
       updateUserStatus(id, type).then(res => {
-        console.log(res)
         if (res.data.meta.status === 200) {
           this.$message({
             type: 'success',
@@ -265,7 +293,6 @@ export default {
         if (valid) {
           editUser(this.editForm)
             .then(res => {
-              console.log(res)
               if (res.data.meta.status === 200) {
                 this.$message({
                   type: 'success',
@@ -284,7 +311,6 @@ export default {
               }
             })
             .catch(() => {
-              console.log('err')
             })
         } else {
           return false
@@ -299,7 +325,6 @@ export default {
           // 发起新增用户请求
           addUser(this.addForm)
             .then(res => {
-              console.log(res)
               if (res.data.meta.status === 201) {
                 this.$message({
                   type: 'success',
@@ -329,20 +354,17 @@ export default {
     },
     //   切换每页显示记录数时触发
     handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
       //   val就是当前设置之后的每页的记录数，我们只需要重置pagesize
       this.pagesize = val
       this.init()
     },
     //   切换当前页码时触发
     handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
       this.pagenum = val
       this.init()
     },
     // 单击编辑弹出对话框，加载默认数据
     handleEdit (obj) {
-      console.log(obj)
       // 让弹出框显示
       this.editDialogFormVisible = true
       // 表单元素实现的双向数据绑定，所以我们只需要为表单元素的双向绑定数据对象有数据就行
@@ -359,7 +381,6 @@ export default {
         pagesize: this.pagesize
       })
         .then(res => {
-          console.log(res)
           this.userList = res.data.data.users
           this.total = res.data.data.total
         })
@@ -371,6 +392,11 @@ export default {
   // 页面加载完成就去获取用户列表数据
   mounted () {
     this.init()
+    // 加载角色列表数据
+    getAllRoleList()
+      .then(res => {
+        this.roleList = res.data.data
+      })
   }
 }
 </script>

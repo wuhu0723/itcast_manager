@@ -13,9 +13,9 @@
         v-model="userKey"
         class="input-with-select"
         style="width:300px;margin-right:15px"
-        @keyup.native.enter="init"
+        @keyup.enter.native="init"
       >
-        <el-button slot="append" icon="el-icon-search"></el-button>
+        <el-button slot="append" icon="el-icon-search" @click='init'></el-button>
       </el-input>
       <el-button type="success" plain @click="addDialogFormVisible=true">添加用户</el-button>
     </div>

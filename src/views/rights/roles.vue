@@ -77,6 +77,7 @@
     <el-dialog title="角色授权" :visible.sync="grantdialogFormVisible">
       <div class="box">
         <el-tree
+        ref='tree'
         :data="rightList"
         show-checkbox
         node-key="id"
@@ -87,7 +88,7 @@
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="grantdialogFormVisible = false">取 消</el-button>
-        <el-button type="primary">确 定</el-button>
+        <el-button type="primary" @click='grantSubmit'>确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -114,6 +115,32 @@ export default {
     }
   },
   methods: {
+    // 实现角色授权提交
+    grantSubmit () {
+      // var arr = this.$refs.tree.getCheckedKeys()
+      var arr = this.$refs.tree.getCheckedNodes()
+      // [authName: "添加订单",id: 109,path: (...),pid: "107,102"]
+      console.log(arr)
+      // 我们需要的是每个权限所对应的id，同时包含它们的父级id
+      // 1.遍历Arr,获取里面的两个值：id   pid  ,遍历：我需要遍历拼接后的结果["109,107,102",'154,107,102']
+      // 它可以将回调函数的操作结果存储到map函数内部所创建的数组中，当遍历完之后再将其返回
+      var temp = arr.map(value => {
+        return value.id + ',' + value.pid
+      })
+      // ["109,107,102", "154,107,102"]
+      console.log(temp)
+      // 去除重复值--数组才能去重
+      // 将数组拼接为字符串 “109,107,102,154,107,102"
+      var str = temp.join(',')
+      console.log(str)
+      console.log(str.split(','))
+      // 数组去重.new Set可以创建一个set对象，同时去除重复值
+      var obj = new Set(str.split(','))
+      console.log(obj)
+      // 最终需要一个去除了重复值的数组,...可以将对象中的数据一个一个展开
+      var final = [...obj]
+      console.log(final.join(','))
+    },
     // 打开授权对话框
     showGrantDialog (row) {
       this.grantdialogFormVisible = true

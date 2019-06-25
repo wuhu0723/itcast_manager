@@ -15,16 +15,21 @@
           <!-- 遍历数据行对象的children -->
           <el-row v-for="first in scope.row.children" :key="first.id" style='margin-bottom:10px;border-bottom:1px dashed #ccc'>
             <el-col :span="4">
-              <el-tag closable type="success">{{first.authName}}</el-tag>
+              <el-tag closable type="success"  @close='deleteright(scope.row,first.id)' v-if='first.children.length !== 0'>{{first.authName}}</el-tag>
             </el-col>
             <el-col :span="20">
-              <el-row v-for='second in first.children' :key='second.id' style='margin-bottom:10px;'>
-                <el-col :span='4'><el-tag closable type="info">{{second.authName}}</el-tag></el-col>
+              <el-row v-for='second in first.children' :key='second.id' style='margin-bottom:10px;' >
+                <el-col :span='4'>
+                  <el-tag closable type="info"  @close='deleteright(scope.row,second.id)'  v-if='second.children.length !== 0'>{{second.authName}}</el-tag>
+                  </el-col>
                 <el-col :span='20'>
                   <el-tag closable type="danger" v-for='third in second.children' :key='third.id' style='margin:0 4px 4px 0' @close='deleteright(scope.row,third.id)'>{{third.authName}}</el-tag>
                 </el-col>
               </el-row>
             </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24" v-if='scope.row.children.length === 0'>没有任何的权限数据，请先添加</el-col>
           </el-row>
         </template>
       </el-table-column>

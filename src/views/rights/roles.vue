@@ -12,19 +12,18 @@
       <el-table-column type="expand">
         <!-- 展开的时候，template模板中的结构就是展开行的内容 -->
         <template slot-scope="scope">
-          <el-row v-for="first in scope.row.children" :key="first.id" style='margin-bottom:15px'>
+          <!-- 遍历数据行对象的children -->
+          <el-row v-for="first in scope.row.children" :key="first.id" style='margin-bottom:10px;border-bottom:1px dashed #ccc'>
             <el-col :span="4">
               <el-tag closable type="success">{{first.authName}}</el-tag>
             </el-col>
             <el-col :span="20">
-                <el-row v-for='second in first.children' :key='second.id'>
-                    <el-col :span='4'>
-                        <el-tag closable type="info">{{second.authName}}</el-tag>
-                    </el-col>
-                    <el-col :span='20'>
-                        <el-tag closable type="info" v-for='third in second.children' :key='third.id'>{{third.authName}}</el-tag>
-                    </el-col>
-                </el-row>
+              <el-row v-for='second in first.children' :key='second.id' style='margin-bottom:10px;'>
+                <el-col :span='4'><el-tag closable type="info">{{second.authName}}</el-tag></el-col>
+                <el-col :span='20'>
+                  <el-tag closable type="danger" v-for='third in second.children' :key='third.id' style='margin:0 4px 4px 0' @close='deleteright(scope.row,third.id)'>{{third.authName}}</el-tag>
+                </el-col>
+              </el-row>
             </el-col>
           </el-row>
         </template>
@@ -50,11 +49,30 @@
   </div>
 </template>
 <script>
-import { getAllRoleList } from '@/api/roles.js'
+import { getAllRoleList, deleteRightById } from '@/api/roles.js'
 export default {
   data () {
     return {
       roleList: []
+    }
+  },
+  methods: {
+    // 删除指定权限
+    deleteright (row, rightid) {
+      deleteRightById(row.id, rightid)
+        .then(res => {
+          console.log('--------------')
+          console.log(res)
+          console.log('--------------')
+          if (res.data.meta.status === 200) {
+            this.$message({
+              type: 'success',
+              message: res.data.meta.msg
+            })
+            // 数据的刷新
+            row.children = res.data.data
+          }
+        })
     }
   },
   mounted () {

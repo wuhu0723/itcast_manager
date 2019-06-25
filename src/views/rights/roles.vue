@@ -94,11 +94,12 @@
   </div>
 </template>
 <script>
-import { getAllRoleList, deleteRightById } from '@/api/roles.js'
+import { getAllRoleList, deleteRightById, grantRightByRoleId } from '@/api/roles.js'
 import { getAllRightList } from '@/api/rights.js'
 export default {
   data () {
     return {
+      roleId: '',
       // 当前角色权限id数组
       checkedArr: [],
       // 所有权限数据
@@ -140,9 +141,16 @@ export default {
       // 最终需要一个去除了重复值的数组,...可以将对象中的数据一个一个展开
       var final = [...obj]
       console.log(final.join(','))
+
+      // 调用接口方法实现角色授权
+      grantRightByRoleId(this.roleId, final.join(','))
+        .then(res => {
+          console.log(res)
+        })
     },
     // 打开授权对话框
     showGrantDialog (row) {
+      this.roleId = row.id
       this.grantdialogFormVisible = true
       // 获取所有权限数据
       getAllRightList('tree')

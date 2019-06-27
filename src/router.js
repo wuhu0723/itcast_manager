@@ -10,6 +10,9 @@ import Welcome from '@/views/Welcome.vue'
 import Users from '@/views/users/User.vue'
 import Right from '@/views/rights/right.vue'
 import Role from '@/views/rights/roles.vue'
+import Goods from '@/views/goods/goods.vue'
+import List from '@/views/goods/list.vue'
+import Add from '@/views/goods/add.vue'
 
 Vue.use(VueRouter)
 
@@ -48,6 +51,25 @@ var router = new VueRouter({
           name: 'Role',
           path: 'roles',
           component: Role
+        },
+        {
+          name: 'Goods',
+          path: 'goods',
+          component: Goods,
+          // 添加重定向，让其默认展示list.vue组件的内容
+          redirect: { name: 'List' },
+          children: [
+            {
+              name: 'List',
+              path: 'list',
+              component: List
+            },
+            {
+              name: 'Add',
+              path: 'add',
+              component: Add
+            }
+          ]
         }
       ]
     }

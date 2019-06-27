@@ -6,7 +6,7 @@
       <el-breadcrumb-item>角色管理</el-breadcrumb-item>
       <el-breadcrumb-item>角色列表</el-breadcrumb-item>
     </el-breadcrumb>
-    <el-button type="success" plain>添加角色</el-button>
+    <el-button type="success" plain @click='adddialogFormVisible=true'>添加角色</el-button>
     <el-table :data="roleList" style="width: 100%">
       <!-- type="expand"：说明这列可以实现展开 -->
       <el-table-column type="expand">
@@ -77,28 +77,55 @@
     <el-dialog title="角色授权" :visible.sync="grantdialogFormVisible">
       <div class="box">
         <el-tree
-        ref='tree'
-        :data="rightList"
-        show-checkbox
-        node-key="id"
-        :default-expand-all='true'
-        :default-checked-keys="checkedArr"
-        :props="defaultProps"
-      ></el-tree>
+          ref="tree"
+          :data="rightList"
+          show-checkbox
+          node-key="id"
+          :default-expand-all="true"
+          :default-checked-keys="checkedArr"
+          :props="defaultProps"
+        ></el-tree>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="grantdialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click='grantSubmit'>确 定</el-button>
+        <el-button type="primary" @click="grantSubmit">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 添加角色对话框 -->
+    <el-dialog title="添加角色" :visible.sync="adddialogFormVisible">
+      <el-form :model="roleForm"  :label-width="'120px'">
+        <el-form-item label="角色名称"  v-focus>
+          <el-input v-model="roleForm.roleName" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述">
+          <el-input v-model="roleForm.roleDesc" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="adddialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click='add'>确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script>
-import { getAllRoleList, deleteRightById, grantRightByRoleId } from '@/api/roles.js'
+import {
+  getAllRoleList,
+  deleteRightById,
+  grantRightByRoleId,
+  addRole
+} from '@/api/roles.js'
 import { getAllRightList } from '@/api/rights.js'
 export default {
   data () {
     return {
+      // 标记角色对话框的显示和隐藏
+      adddialogFormVisible: false,
+      roleForm: {
+        roleName: '',
+        roleDesc: ''
+      },
       roleId: '',
       // 当前角色权限id数组
       checkedArr: [],
@@ -115,7 +142,32 @@ export default {
       roleList: []
     }
   },
+  directives: {
+    'focus': {
+      inserted (el) {
+        el.focus()
+      }
+    }
+  },
   methods: {
+    // 实现角色的添加
+    add () {
+      addRole(this.roleForm)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 201) {
+            this.$message({
+              type: 'success',
+              message: res.data.meta.msg
+            })
+            this.adddialogFormVisible = false
+            this.init()
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
     // 实现角色授权提交
     grantSubmit () {
       // var arr = this.$refs.tree.getCheckedKeys()
@@ -143,25 +195,23 @@ export default {
       console.log(final.join(','))
 
       // 调用接口方法实现角色授权
-      grantRightByRoleId(this.roleId, final.join(','))
-        .then(res => {
-          console.log(res)
-        })
+      grantRightByRoleId(this.roleId, final.join(',')).then(res => {
+        console.log(res)
+      })
     },
     // 打开授权对话框
     showGrantDialog (row) {
       this.roleId = row.id
       this.grantdialogFormVisible = true
       // 获取所有权限数据
-      getAllRightList('tree')
-        .then(res => {
-          console.log(res)
-          this.rightList = res.data.data
-        })
+      getAllRightList('tree').then(res => {
+        console.log(res)
+        this.rightList = res.data.data
+      })
       // 获取当前角色所拥有的所有权限id
       // 先将上一个角色的权限id数组清空
       this.checkedArr.length = 0
-      row.children.forEach((first) => {
+      row.children.forEach(first => {
         if (first.children.length > 0) {
           // 遍历二级权限
           first.children.forEach(second => {
@@ -190,19 +240,23 @@ export default {
           row.children = res.data.data
         }
       })
+    },
+    // 数据初始化
+    init () {
+      getAllRoleList().then(res => {
+        console.log(res)
+        // 所有角色数据
+        this.roleList = res.data.data
+      })
     }
   },
   mounted () {
-    getAllRoleList().then(res => {
-      console.log(res)
-      // 所有角色数据
-      this.roleList = res.data.data
-    })
+    this.init()
   }
 }
 </script>
 <style lang="less" scoped>
-.box{
+.box {
   height: 400px;
   overflow: scroll;
 }

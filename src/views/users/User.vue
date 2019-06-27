@@ -111,6 +111,8 @@
         <!-- 添加下拉列表 -->
         <el-form-item label="角色列表">
           <el-select v-model="grantForm.rid" placeholder="请选择" @change="roleChange">
+            <!-- 能够唯一的标识这个节点，后期如果对这个节点进行操作，可以提高操作效率 -->
+            <!-- 虚拟dom -->
             <el-option
               v-for="item in roleList"
               :key="item.id"

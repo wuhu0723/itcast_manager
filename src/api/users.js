@@ -1,28 +1,29 @@
-import axios from 'axios'
-// 设置基准路径
-axios.defaults.baseURL = 'http://localhost:8888/api/private/v1/'
+// import axios from 'axios'
+// // 设置基准路径
+// axios.defaults.baseURL = 'http://localhost:8888/api/private/v1/'
 
-// 添加请求拦截器
-// axios如果发现用户请求，就会调用use中的函数进行处理， 同时为这个函数传入一个config参数
-// 请求相关数据--请求报文
-// config有请求头
-axios.interceptors.request.use(function (config) {
-  // 在发送请求之前做些什么
-  // 获取可能有的token数据，进行请求头的设置，格式Authorization:token
-  var token = localStorage.getItem('itcast_pro_token')
-  // 判断有没有token，有则传递
-  if (token) {
-    // console.log(config)
-    config.headers['Authorization'] = token
-  }
+// // 添加请求拦截器
+// // axios如果发现用户请求，就会调用use中的函数进行处理， 同时为这个函数传入一个config参数
+// // 请求相关数据--请求报文
+// // config有请求头
+// axios.interceptors.request.use(function (config) {
+//   // 在发送请求之前做些什么
+//   // 获取可能有的token数据，进行请求头的设置，格式Authorization:token
+//   var token = localStorage.getItem('itcast_pro_token')
+//   // 判断有没有token，有则传递
+//   if (token) {
+//     // console.log(config)
+//     config.headers['Authorization'] = token
+//   }
 
-  return config
-}, function (error) {
-  // 对请求错误做些什么
-  // return new Promise({})
-  // 终止当前请求，最终axios.catch来响应
-  return Promise.reject(error)
-})
+//   return config
+// }, function (error) {
+//   // 对请求错误做些什么
+//   // return new Promise({})
+//   // 终止当前请求，最终axios.catch来响应
+//   return Promise.reject(error)
+// })
+import axios from '@/utils/myaxios.js'
 
 // 添加登陆验证方法
 // 在vue中，暴露成员可以使用export

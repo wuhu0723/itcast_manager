@@ -267,12 +267,18 @@ export default {
           // 发起删除请求
           deleteUser(id)
             .then(res => {
+              console.log(res)
               if (res.data.meta.status === 200) {
                 this.$message({
                   type: 'success',
                   message: '删除成功!'
                 })
                 this.init()
+              } else if (res.data.meta.status === 401) {
+                this.$message({
+                  type: 'warning',
+                  message: res.data.meta.msg
+                })
               }
             })
             .catch(() => {

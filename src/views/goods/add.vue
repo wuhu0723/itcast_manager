@@ -44,7 +44,7 @@
   </div>
 </template>
 <script>
-import { getCategoriesList } from '@/api/category.js';
+import { getCategoriesList } from '@/api/category.js'
 export default {
   data () {
     return {

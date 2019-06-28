@@ -10,6 +10,18 @@ Vue.use(ElementUI)
 
 Vue.config.productionTip = false
 
+// 凡是路由请求都会经过这个前置导航守卫---中间件
+router.beforeEach((to, from, next) => {
+  // 判断是否有token，如果有，则继续，否则重定向到登陆
+  var token = localStorage.getItem('itcast_pro_token')
+  console.log(to)
+  if (token || to.path === '/login') {
+    next()
+  } else {
+    next({ name: 'Login' })
+  }
+})
+
 new Vue({
   router,
   render: h => h(App)

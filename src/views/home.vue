@@ -12,6 +12,7 @@
           text-color="#fff"
           active-text-color="#ffd04b"
         >
+        <!-- index是当前菜单项的唯一标识 -->
           <el-submenu :index="item.id+''" v-for='item in menuList' :key='item.id'>
             <template slot="title">
               <i class="el-icon-location"></i>
@@ -22,6 +23,7 @@
             指定router-view：关注组件的嵌套结构
             <a href='../*.html'></a>
             <a href='../*.vue'></a> -->
+            <!-- index是进行路由跳转设置 -->
             <el-menu-item :index="'/home/'+subitem.path" v-for='subitem in item.children' :key='subitem.id'>
               <template slot="title">
                 <i class="el-icon-location"></i>

@@ -22,7 +22,7 @@
               <el-tag
                 closable
                 type="success"
-                @close="deleteright(scope.row,first.id)"
+                @close="cnt=0;deleteright(scope.row,first.id)"
                 v-if="first.children.length !== 0"
               >{{first.authName}}</el-tag>
             </el-col>
@@ -32,8 +32,7 @@
                   <el-tag
                     closable
                     type="info"
-                    @close="deleteright(scope.row,second.id)"
-                    v-if="second.children.length !== 0"
+                    @close="cnt=0;deleteright(scope.row,second.id)"
                   >{{second.authName}}</el-tag>
                 </el-col>
                 <el-col :span="20">
@@ -43,7 +42,7 @@
                     v-for="third in second.children"
                     :key="third.id"
                     style="margin:0 4px 4px 0"
-                    @close="deleteright(scope.row,third.id)"
+                    @close="cnt=0;deleteright(scope.row,third.id)"
                   >{{third.authName}}</el-tag>
                 </el-col>
               </el-row>
@@ -120,6 +119,7 @@ import { getAllRightList } from '@/api/rights.js'
 export default {
   data () {
     return {
+      cnt: 0,
       // 标记角色对话框的显示和隐藏
       adddialogFormVisible: false,
       roleForm: {
@@ -228,13 +228,32 @@ export default {
     // 删除指定权限
     deleteright (row, rightid) {
       deleteRightById(row.id, rightid).then(res => {
-        console.log('--------------')
-        console.log(res)
-        console.log('--------------')
         if (res.data.meta.status === 200) {
-          this.$message({
-            type: 'success',
-            message: res.data.meta.msg
+          if (this.cnt === 0) {
+            this.$message({
+              type: 'success',
+              message: res.data.meta.msg
+            })
+            this.cnt++
+          }
+
+          console.log('--------------')
+          console.log(res.data.data)
+          console.log('--------------')
+          // 新的需求：当删除完这个权限之后，应该判断这个权限还有没有兄弟权限，就应该也删除上一级权限
+          // 我们需要对返回的数据(删除之后这个角色还拥有的权限)进行重新的遍历，判断某个权限是否还有子级权限，如果有，则不处理，如果没有，则也要删除没有任何子级权限的权限
+          var data = res.data.data
+          data.forEach((v1, i1) => {
+            // 判断它有没有子级权限
+            if (v1.children.length === 0) { // 说明没有子级权限了
+              this.deleteright(row, v1.id)
+            } else {
+              v1.children.forEach((v2, i2) => {
+                if (v2.children.length === 0) {
+                  this.deleteright(row, v2.id)
+                }
+              })
+            }
           })
           // 数据的刷新
           row.children = res.data.data

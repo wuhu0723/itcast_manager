@@ -39,7 +39,7 @@
             <h3 class="system-title">后台管理系统</h3>
             <div class="welcome">
                 <span>你好：admin</span> &nbsp;&nbsp;&nbsp;
-                <a href="javascript:;">退出</a>
+                <a href="javascript:;" @click.prevent='loginout'>退出</a>
             </div>
         </el-header>
         <el-main>
@@ -55,6 +55,12 @@ export default {
   data () {
     return {
       menuList: []
+    }
+  },
+  methods: {
+    loginout () {
+      localStorage.removeItem('itcast_pro_token')
+      this.$router.push({ name: 'Login' })
     }
   },
   mounted () {

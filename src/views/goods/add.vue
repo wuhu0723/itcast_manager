@@ -39,10 +39,11 @@
             <el-upload
               class="upload-demo"
               action="http://localhost:8888/api/private/v1/upload"
-              :headers='getToken()'
+              :headers="getToken()"
               :on-preview="handlePreview"
               :on-remove="handleRemove"
-              :on-success='handleSuccess'
+              :on-success="handleSuccess"
+              :before-upload='bu'
               :file-list="fileList"
               list-type="picture"
             >
@@ -50,18 +51,24 @@
               <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
             </el-upload>
           </el-tab-pane>
-          <el-tab-pane label="商品描述" name="2">角色管理</el-tab-pane>
+          <el-tab-pane label="商品描述" name="2">
+            <quill-editor v-model="goodsForm.goods_introduce" ref="myQuillEditor" :options="editorOption" style='height:300px;border-bottom:1px solid #ccc;'></quill-editor>
+          </el-tab-pane>
           <el-tab-pane label="商品参数" name="3">定时任务补偿</el-tab-pane>
         </el-tabs>
+        <el-button type="primary" style='float:right;margin:20px 0' @click='addGoods'>添加商品</el-button>
       </el-form>
     </el-card>
   </div>
 </template>
 <script>
 import { getCategoriesList } from '@/api/category.js'
+import { addGoodsInfo } from '@/api/goods.js'
 export default {
   data () {
     return {
+      // 富文本的配置，主要用来配置样式按钮
+      editorOption: {},
       fileList: [],
       // 所有分类数据
       cateList: [],
@@ -84,17 +91,65 @@ export default {
     }
   },
   methods: {
+    bu (file) {
+      console.log(file)
+      if (file.type.indexOf('image/') !== 0) {
+        this.$message({
+          type: 'warning',
+          message: '请选择图片格式的文件'
+        })
+        // return false会触发handleRemove操作
+        return false
+      }
+    },
+    // 添加商品信息
+    addGoods () {
+      console.log(this.goodsForm)
+      addGoodsInfo(this.goodsForm)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 201) {
+            this.$message({
+              type: 'success',
+              message: res.data.meta.msg
+            })
+            this.$router.push({ name: 'List' })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
     // 设置请求头传递token
     getToken () {
       var token = localStorage.getItem('itcast_pro_token')
-      return { 'Authorization': token }
+      return { Authorization: token }
     },
     // 上传成功之后的处理函数
-    handleSuccess () {},
+    handleSuccess (response, file, fileList) {
+      // console.log(response, file, fileList)
+      // 数据就存储在reponse中
+      this.goodsForm.pics.push({ pic: response.data.tmp_path })
+      console.log(this.goodsForm.pics)
+    },
     // 预览
     handlePreview () {},
     // 移除
-    handleRemove () {},
+    handleRemove (file, fileList) {
+      console.log(file)
+      if (!file.response) {
+        return
+      }
+      // file就是当前你移除的文件
+      var filename = file.response.data.tmp_path
+      // 我们要根据 file里面的数据删除this.goodsForm.pics中的数据
+      for (var i = 0; i < this.goodsForm.pics.length; i++) {
+        if (this.goodsForm.pics[i].pic === filename) {
+          this.goodsForm.pics.splice(i, 1)
+          break
+        }
+      }
+    },
     // 获取当前级联选择器的value
     getcatid (value) {
       // console.log(value.join(','))

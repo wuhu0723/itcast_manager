@@ -6,9 +6,18 @@ import 'element-ui/lib/theme-chalk/index.css'
 import '@/styles/index.less'
 // 引入路由模块
 import router from '@/router.js'
+import VueQuillEditor from 'vue-quill-editor'
+
+// require styles
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 Vue.use(ElementUI)
 
 Vue.config.productionTip = false
+
+// 注册-让Vue来使用这个插件
+Vue.use(VueQuillEditor)
 
 // 凡是路由请求都会经过这个前置导航守卫---中间件
 router.beforeEach((to, from, next) => {

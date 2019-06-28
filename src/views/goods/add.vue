@@ -32,10 +32,24 @@
             </el-form-item>
             <el-form-item label="商品分类">
               <!-- 添加级联选择器 -->
-              <el-cascader :options="cateList" :props="cateprops" clearable></el-cascader>
+              <el-cascader :options="cateList" :props="cateprops" clearable @change="getcatid"></el-cascader>
             </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="商品图片" name="1">配置管理</el-tab-pane>
+          <el-tab-pane label="商品图片" name="1">
+            <el-upload
+              class="upload-demo"
+              action="http://localhost:8888/api/private/v1/upload"
+              :headers='getToken()'
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              :on-success='handleSuccess'
+              :file-list="fileList"
+              list-type="picture"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+            </el-upload>
+          </el-tab-pane>
           <el-tab-pane label="商品描述" name="2">角色管理</el-tab-pane>
           <el-tab-pane label="商品参数" name="3">定时任务补偿</el-tab-pane>
         </el-tabs>
@@ -48,6 +62,7 @@ import { getCategoriesList } from '@/api/category.js'
 export default {
   data () {
     return {
+      fileList: [],
       // 所有分类数据
       cateList: [],
       cateprops: {
@@ -66,6 +81,24 @@ export default {
         pics: [],
         atts: []
       }
+    }
+  },
+  methods: {
+    // 设置请求头传递token
+    getToken () {
+      var token = localStorage.getItem('itcast_pro_token')
+      return { 'Authorization': token }
+    },
+    // 上传成功之后的处理函数
+    handleSuccess () {},
+    // 预览
+    handlePreview () {},
+    // 移除
+    handleRemove () {},
+    // 获取当前级联选择器的value
+    getcatid (value) {
+      // console.log(value.join(','))
+      this.goodsForm.goods_cat = value.join(',')
     }
   },
   mounted () {

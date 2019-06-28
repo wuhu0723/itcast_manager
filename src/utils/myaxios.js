@@ -6,8 +6,10 @@ var myaxios = axios.create({
 })
 
 myaxios.interceptors.request.use(function (config) {
+  console.log(123)
   var token = localStorage.getItem('itcast_pro_token')
   if (token) {
+    // headers:请求头
     config.headers['Authorization'] = token
   }
 
